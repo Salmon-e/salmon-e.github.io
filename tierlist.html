@@ -1,13 +1,128 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Page Title</title>
+    <title>Page Title</title>
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+    }
+    html, body {
+        width: 2000px;
+        height: 2000px
+    }
+    .imgbox {
+        display: grid;
+        width: 100%;
+        height: 100%;        
+    }
+    .fill {
+        min-width: 100%;
+    }
+    .overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+    }
+    .comic {
+        resize: both;
+        overflow: auto;
+        position: absolute;
+        max-width: 75px;
+        max-height: 150px;
+    }
+</style>
+
 </head>
 <body>
+    <h1>
+        xkcd comic tierlist
+    </h1>
+    <p>
+        Because browsers don't like having over 2000 images on screen at once, only 100 are draggable at a time. <br>
+        Press enter while dragging an image to paste it onto the background, to open another slot. <br>
+        If you fill up the list, right click -> [Save image as] to save your progress and then click the clear button to get a fresh list.        
+    </p>
+    <button onclick="clearTiers()">Clear</button>
+    <div class="imgbox">
+        <img src="res/tiers.png" draggable="false" hidden="true" id="tiers">  
+        <canvas id="canvas">
+            
+        </canvas>
+        <div id="comics"class="overlay fill">        
+            
+        </div>
+        <script>
 
-<canvas>
-    <img src = /res/tiers.png>   
-</canvas>
+            var comics = document.getElementById("comics");
+            var canvas = document.getElementById("canvas");
+            var offset = canvas.offsetTop;
+            var tiers = document.getElementById("tiers");
+            var scale = 4;
+            tiers.onload = () => {
+                canvas.width = tiers.width * scale * 4;
+                canvas.height = tiers.height * scale * 4;
+                canvas.style.width = "2000px";
+                canvas.style.height = "1500px";
+                var ctx = canvas.getContext("2d");                
+                ctx.drawImage(tiers, 0, 0, canvas.width, canvas.height);
+            }
+            function clearTiers() {
+                var ctx = canvas.getContext("2d");                
+                ctx.drawImage(tiers, 0, 0, canvas.width, canvas.height);
+            }
+            console.log(canvas);
+            let mousePos = { x: undefined, y: undefined };
+            var draggedImage = null;
+            window.addEventListener('mousemove', (event) => {
+              mousePos = { x: event.pageX, y: event.pageY };
 
+              if(draggedImage != null) {
+                draggedImage.style.left = mousePos.x + draggedImage.dragOffset.x + "px";
+                draggedImage.style.top = mousePos.y + draggedImage.dragOffset.y + "px";
+              }
+            });
+            window.addEventListener('mouseup', (e) => {
+                draggedImage = null;
+            });
+            window.addEventListener('keydown', (e) => {
+                if(draggedImage != null && e.key == "Enter") {
+                    var ctx = canvas.getContext("2d"); 
+                    ctx.drawImage(draggedImage, (mousePos.x + draggedImage.dragOffset.x) * scale, (mousePos.y + draggedImage.dragOffset.y - offset) * scale, draggedImage.width * scale, draggedImage.height * scale);
+                    draggedImage.remove();
+                    draggedImage = null;
+                    while(comics.childElementCount < 100 && i <= 2795) {
+                        loadImage();
+                    }  
+                }
+            });
+            var i = 2750;
+            function loadImage() {
+                var img = document.createElement("img");
+                img.onerror = () => {
+                    img.remove();
+                }
+                img.src = "res/Xkcd/"+i+".png";
+                i++;
+
+                img.classList.add("comic");
+                img.style.top = Math.random() * 500 + 1500 + "px";
+                img.style.left = Math.random() * 2000 + "px";
+                img.draggable = false;
+                img.onmousedown = (e) => {
+                    draggedImage = e.target;
+                    draggedImage.dragOffset = {x: e.target.offsetLeft - mousePos.x, y: e.target.offsetTop - mousePos.y};
+                    console.log(draggedImage.dragOffset);
+                }
+                comics.appendChild(img);                              
+            }
+
+            while(comics.childElementCount < 100 && i <= 2795) {
+                loadImage();
+            }  
+
+        </script>
+    </div>
+    
 </body>
 </html>
